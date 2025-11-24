@@ -4,32 +4,29 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { GoogleUser } from './interfaces/google-user.interface';
 @Injectable()
 export class AuthService {
 
-  constructor(private prisma:PrismaService,private jwtService: JwtService){}
+  constructor(private prisma: PrismaService, private jwtService: JwtService) { }
 
-  async login(createAuthDto: CreateAuthDto){
+  async login(createAuthDto: CreateAuthDto) {
 
-    console.log('user',createAuthDto)
-    const userExist= await this.prisma.user.findUnique({
-      where:{email:createAuthDto.email},
+    console.log('user', createAuthDto)
+    const userExist = await this.prisma.user.findUnique({
+      where: { email: createAuthDto.email },
     });
 
-    if(!userExist){
-      throw new HttpException('Usuario no encontrado',HttpStatus.NOT_FOUND);
+    if (!userExist) {
+      throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
     }
 
-    const userValidatePassword= await bcrypt.compare(createAuthDto.password, userExist.password);
-    if(!userValidatePassword){
-      throw new HttpException('Contraseña invalida',HttpStatus.UNAUTHORIZED);
+    const userValidatePassword = await bcrypt.compare(createAuthDto.password, userExist.password);
+    if (!userValidatePassword) {
+      throw new HttpException('Contraseña invalida', HttpStatus.UNAUTHORIZED);
     }
 
-    const payload = { email: userExist.email, sub: userExist.id };// Payload del token
-    const token = await this.jwtService.signAsync(payload);// Genera el token JWT 
-
-
-    return {message: 'Login exitoso', token:token ,user: {id: userExist.id, email: userExist.email}};
+    return this.generateToken(userExist);
   }
 
 
@@ -70,5 +67,53 @@ export class AuthService {
     };
   }
 
+  /**
+   * Valida y procesa el usuario que viene desde Google OAuth
+   * Crea o actualiza el usuario en la base de datos y genera un token JWT
+   * @param googleUser - Datos del usuario desde Google
+   * @returns Objeto con mensaje, token y datos del usuario
+   */
+  async validateGoogleUser(googleUser: GoogleUser) {
+    // 1. Buscar por googleId (lo más seguro y robusto)
+    const userByGoogleId = await this.prisma.user.findUnique({
+      where: { googleId: googleUser.googleId },
+    });
+
+    if (userByGoogleId) {
+      return this.generateToken(userByGoogleId);
+    }
+
+    // 2. Si no existe por googleId, buscar por email (para vincular cuentas)
+    const userByEmail = await this.prisma.user.findUnique({
+      where: { email: googleUser.email },
+    });
+
+    if (userByEmail) {
+      // El usuario existe por email pero no tenía googleId vinculado. Lo actualizamos.
+      const updatedUser = await this.prisma.user.update({
+        where: { id: userByEmail.id },
+        data: { googleId: googleUser.googleId },
+      });
+      return this.generateToken(updatedUser);
+    }
+
+    // 3. Usuario nuevo -> Crear en BD con googleId
+    const newUser = await this.prisma.user.create({
+      data: {
+        email: googleUser.email,
+        name: `${googleUser.firstName} ${googleUser.lastName}`.trim(),
+        googleId: googleUser.googleId,
+        avatar: googleUser.picture,
+        password: '', // Sin password porque entra con Google
+      },
+    });
+    return this.generateToken(newUser);
+  }
+
+  private async generateToken(user: any) {
+    const payload = { email: user.email, sub: user.id };
+    const token = await this.jwtService.signAsync(payload);
+    return { message: 'Login exitoso', token: token, user: { id: user.id, email: user.email } };
+  }
 
 }
