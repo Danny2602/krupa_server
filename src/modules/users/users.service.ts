@@ -1,16 +1,31 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-
+import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UsersService {
 
   constructor(private prisma:PrismaService){}
 
-  create(createUserDto: CreateUserDto) {
-    return this.prisma.user.create({data:createUserDto})
+  async create(createUserDto: CreateUserDto) {
+    const password=bcrypt.hashSync(createUserDto.password,10);
+
+    const existingUser=await this.prisma.user.findUnique({where:{email:createUserDto.email}});
+    
+    if (existingUser) {
+      throw new HttpException(
+        'El usuario ya existe',
+        HttpStatus.CONFLICT, 
+      );
+    }
+    await this.prisma.user.create({data: {...createUserDto,password}});
+
+    return {
+      message: 'Usuario registrado correctamente'
+    };
   }
+
 
   findAll() {
     return `This action returns all users`;
