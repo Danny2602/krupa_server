@@ -10,6 +10,7 @@ export class AuthController {
 
   @Post('/credentials')
   @HttpCode(200)
+
   async login(@Body() createAuthDto: CreateAuthDto ,@Res() res:Response) {
     console.log('controller:',createAuthDto)
     const result = await this.authService.login(createAuthDto);
@@ -33,5 +34,13 @@ export class AuthController {
     return await this.authService.checkStatus(req.user);
   }
 
-
+  @Get('logout')
+  async logout(@Res() res: Response) {
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: false, // en local debe estar false
+      sameSite: 'lax',
+    });
+    return res.json({ message: 'Logout exitoso' });
+  }
 }
