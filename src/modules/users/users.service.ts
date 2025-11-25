@@ -6,20 +6,20 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UsersService {
 
-  constructor(private prisma:PrismaService){}
+  constructor(private prisma: PrismaService) { }
 
   async create(createUserDto: CreateUserDto) {
-    const password=bcrypt.hashSync(createUserDto.password,10);
+    const password = bcrypt.hashSync(createUserDto.password, 10);
 
-    const existingUser=await this.prisma.user.findUnique({where:{email:createUserDto.email}});
-    
+    const existingUser = await this.prisma.user.findUnique({ where: { email: createUserDto.email } });
+
     if (existingUser) {
       throw new HttpException(
         'El usuario ya existe',
-        HttpStatus.CONFLICT, 
+        HttpStatus.CONFLICT,
       );
     }
-    await this.prisma.user.create({data: {...createUserDto,password}});
+    await this.prisma.user.create({ data: { ...createUserDto, password } });
 
     return {
       message: 'Usuario registrado correctamente'
@@ -32,12 +32,23 @@ export class UsersService {
   }
 
   findOne(id: string) {
-    console.log(typeof id,`: ${id}`)
-    return this.prisma.user.findUnique({where:{id}});
+    console.log(typeof id, `: ${id}`)
+    return this.prisma.user.findUnique({ where: { id } });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const password = bcrypt.hashSync(updateUserDto.password, 10);
+    const result = await this.prisma.user.update({
+      where: { id },
+      data: { ...updateUserDto, password },
+    });
+    if (!result) {
+      throw new HttpException(
+        'El usuario no existe',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return { message: 'Usuario actualizado correctamente' };
   }
 
   remove(id: number) {

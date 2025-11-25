@@ -1,13 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '../auth/guards/auth/auth.guard';
+import { GetUser } from '../auth/decorators/get-user.decorator';
+import type { Request } from 'express';
+import * as client from '@prisma/client';
 
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @HttpCode(201)
@@ -23,13 +26,15 @@ export class UsersController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    console.log(typeof id,`: ${id}`)
+    console.log(typeof id, `: ${id}`)
     return this.usersService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  @Patch('profile')
+  @HttpCode(200)
+  @UseGuards(AuthGuard)
+  patch(@GetUser() user: client.User, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(user.id, updateUserDto);
   }
 
   @Delete(':id')

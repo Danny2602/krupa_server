@@ -32,7 +32,7 @@ export class AuthGuard implements CanActivate {
       });
 
       // 6. Adjuntamos el usuario al request para usarlo en el controlador
-      request.user = payload;
+      request.user = { ...payload, id: payload.sub };
 
       // 7. Todo está bien → dejar pasar
       return true;

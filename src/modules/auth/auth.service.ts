@@ -116,4 +116,7 @@ export class AuthService {
     return { message: 'Login exitoso', token: token, user: { id: user.id, email: user.email } };
   }
 
+
+
+  
 }
