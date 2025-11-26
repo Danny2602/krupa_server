@@ -7,6 +7,5 @@ export interface GoogleUser {
     firstName: string;
     lastName: string;
     picture: string;
-    avatar?: string; // Optional: alternative name for picture
     accessToken: string;
 }

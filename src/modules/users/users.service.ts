@@ -31,7 +31,7 @@ export class UsersService {
     return `This action returns all users`;
   }
 
-  findOne(id: string) {
+  async getIdUser(id: string) {
     console.log(typeof id, `: ${id}`)
     return this.prisma.user.findUnique({ where: { id } });
   }

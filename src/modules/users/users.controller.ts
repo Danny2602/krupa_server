@@ -24,10 +24,11 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    console.log(typeof id, `: ${id}`)
-    return this.usersService.findOne(id);
+  @Get('profile')
+  @HttpCode(200)
+  @UseGuards(AuthGuard)
+  getIdUser(@GetUser() user: client.User) {
+    return this.usersService.getIdUser(user.id);
   }
 
   @Patch('profile')

@@ -12,7 +12,6 @@ export class AuthService {
 
   async login(createAuthDto: CreateAuthDto) {
 
-    console.log('user', createAuthDto)
     const userExist = await this.prisma.user.findUnique({
       where: { email: createAuthDto.email },
     });
@@ -63,7 +62,7 @@ export class AuthService {
     return {
       isAuthenticated: true,
       message: 'Usuario autenticado',
-      user: { id: userExist.id, email: userExist.email },
+      user: { id: userExist.id, email: userExist.email, avatar: userExist.avatar },
     };
   }
 
@@ -118,5 +117,5 @@ export class AuthService {
 
 
 
-  
+
 }
