@@ -5,6 +5,9 @@ import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { JwtModule } from '@nestjs/jwt';
+import { DoctorModule } from './modules/doctor/doctor.module';
+import { AppointmentModule } from './modules/appointment/appointment.module';
+import { SpecialtyModule } from './modules/specialty/specialty.module';
 
 @Module({
   imports: [
@@ -16,7 +19,10 @@ import { JwtModule } from '@nestjs/jwt';
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'super_secret_key',// Clave secreta para firmar los tokens
       signOptions: { expiresIn: '5h' },// Configura la expiración del token
-    })
+    }),
+    DoctorModule,
+    AppointmentModule,
+    SpecialtyModule
   ],
   controllers: [AppController],
   providers: [AppService],

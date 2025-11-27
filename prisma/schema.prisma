@@ -21,6 +21,76 @@ model User {
   googleId  String?  @unique
   name      String
   avatar    String?
+  //lado inverso de citas
+  appointments Appointment[]
+
   createdAt DateTime @default(now())
-  updateAt  DateTime @updatedAt 
+  updatedAt  DateTime @updatedAt 
+}
+//tabla especialidades
+model Specialty {
+  id        Int @id @default(autoincrement())
+  name      String  @unique
+  //lado reverso de tabla intermedia
+  doctorSpecialty DoctorSpecialty[]
+}
+//tabla intermedia
+
+//tabla doctores
+model Doctor {
+  id        String   @id @default(uuid())
+  name      String
+  lastName  String
+  email     String   @unique
+  tlf       String?
+  biography String?
+  photo     String?
+  //campos obligatorios detalles de actualizacion e inserccion
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  //lado inverso de citas
+  appointments Appointment[]
+  //lado inverso tabla intermedia
+  doctorSpecialty DoctorSpecialty[]
+
+}
+
+model DoctorSpecialty{
+  id        Int @id @default(autoincrement()) 
+  //id foranea doctores
+  doctorId   String
+  doctor     Doctor  @relation(fields: [doctorId],references: [id]) 
+  //id foranea de especialidades
+  specialtyId Int
+  specialty Specialty @relation(fields: [specialtyId],references: [id])
+
+  @@unique([doctorId,specialtyId])//evitar datos duplicados
+}
+
+
+model Appointment {
+  id        String  @id @default(uuid())
+  notes  String?
+  startTime DateTime
+  endTime   DateTime
+  status    AppointmentStatus @default(PENDING)
+  //id foranea de doctores
+  doctorId  String
+  doctor    Doctor @relation(fields: [doctorId],references: [id])
+  //id foranea de usuarios
+  userId    String
+  user      User  @relation(fields: [userId],references: [id])
+  //campos obligatorios detalles de actualizacion e inserccion
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  //resticcion para que un docotor no tenga la misma en cita en el mismo horario
+  @@unique([doctorId, startTime])
+}
+
+//estados de la cita
+enum AppointmentStatus{
+  PENDING
+  CANCELLED
+  CONFIRMED
 }
