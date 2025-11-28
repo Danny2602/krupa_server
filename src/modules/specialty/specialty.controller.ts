@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { SpecialtyService } from './specialty.service';
 import { CreateSpecialtyDto } from './dto/create-specialty.dto';
 import { UpdateSpecialtyDto } from './dto/update-specialty.dto';
+import { AuthGuard } from '../auth/guards/auth/auth.guard';
 
 @Controller('specialty')
 export class SpecialtyController {
@@ -13,6 +14,7 @@ export class SpecialtyController {
   }
 
   @Get()
+  @UseGuards(AuthGuard)
   getAll() {
     return this.specialtyService.getAll();
   }
