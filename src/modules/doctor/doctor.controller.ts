@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, HttpCode, UseGuards } from '@nestjs/common';
 import { DoctorService } from './doctor.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
+import { AuthGuard } from '../auth/guards/auth/auth.guard';
 
 @Controller('doctor')
 export class DoctorController {
@@ -20,6 +21,14 @@ export class DoctorController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.doctorService.findOne(+id);
+  }
+
+
+  @Get('specialty/:id')
+  @HttpCode(200)
+  @UseGuards(AuthGuard)
+  getDoctorForSpecialty(@Param('id',ParseIntPipe) id:number){
+    return  this.doctorService.getDoctorForSpecialty(id)
   }
 
   @Patch(':id')
