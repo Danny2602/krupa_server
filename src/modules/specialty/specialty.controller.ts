@@ -13,13 +13,13 @@ export class SpecialtyController {
   }
 
   @Get()
-  findAll() {
-    return this.specialtyService.findAll();
+  getAll() {
+    return this.specialtyService.getAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.specialtyService.findOne(+id);
+  getOne(@Param('id') id: string) {
+    return this.specialtyService.getOne(+id);
   }
 
   @Patch(':id')
