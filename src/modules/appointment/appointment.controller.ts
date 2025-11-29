@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseDatePipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseDatePipe, Query, UseGuards } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { queryObjects } from 'v8';
 import { FilterAppointmentDto } from './dto/filter-appointment.dto';
+import { AuthGuard } from '../auth/guards/auth/auth.guard';
 
 @Controller('appointment')
 export class AppointmentController {
@@ -15,6 +16,7 @@ export class AppointmentController {
   }
 
   @Get()
+  @UseGuards(AuthGuard)
   getForDate(@Query() query:FilterAppointmentDto){
       return this.appointmentService.getForDate(query);
   }
