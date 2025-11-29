@@ -26,9 +26,10 @@ export class AppointmentController {
       return this.appointmentService.getForDate(query);
   }
 
-  @Get()
-  findAll() {
-    return this.appointmentService.findAll();
+  @Get('user')
+  @UseGuards(AuthGuard)
+  getForUser(@GetUser() user:client.User) {
+    return this.appointmentService.getForUser(user.id);
   }
 
   // @Get(':id')

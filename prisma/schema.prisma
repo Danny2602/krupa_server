@@ -12,28 +12,31 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 //modelo bdd tabla User
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String?
-  tlf       String? 
-  googleId  String?  @unique
-  name      String
-  avatar    String?
+  id           String        @id @default(uuid())
+  email        String        @unique
+  password     String?
+  tlf          String?
+  googleId     String?       @unique
+  name         String
+  avatar       String?
   //lado inverso de citas
   appointments Appointment[]
 
   createdAt DateTime @default(now())
-  updatedAt  DateTime @updatedAt 
+  updatedAt DateTime @updatedAt
 }
+
 //tabla especialidades
 model Specialty {
-  id        Int @id @default(autoincrement())
-  name      String  @unique
+  id              Int               @id @default(autoincrement())
+  name            String            @unique
   //lado reverso de tabla intermedia
   doctorSpecialty DoctorSpecialty[]
 }
+
 //tabla intermedia
 
 //tabla doctores
@@ -46,51 +49,52 @@ model Doctor {
   biography String?
   photo     String?
   //campos obligatorios detalles de actualizacion e inserccion
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   //lado inverso de citas
-  appointments Appointment[]
+  appointments    Appointment[]
   //lado inverso tabla intermedia
   doctorSpecialty DoctorSpecialty[]
-
 }
 
-model DoctorSpecialty{
-  id        Int @id @default(autoincrement()) 
+model DoctorSpecialty {
+  id          Int       @id @default(autoincrement())
   //id foranea doctores
-  doctorId   String
-  doctor     Doctor  @relation(fields: [doctorId],references: [id]) 
+  doctorId    String
+  doctor      Doctor    @relation(fields: [doctorId], references: [id])
   //id foranea de especialidades
   specialtyId Int
-  specialty Specialty @relation(fields: [specialtyId],references: [id])
+  specialty   Specialty @relation(fields: [specialtyId], references: [id])
 
-  @@unique([doctorId,specialtyId])//evitar datos duplicados
+  @@unique([doctorId, specialtyId]) //evitar datos duplicados
 }
 
-
 model Appointment {
-  id        String  @id @default(uuid())
-  notes  String?
-  startTime DateTime
-  endTime   DateTime
+  id        String            @id @default(uuid())
+  notes     String?
+  startTime DateTime          @db.Timestamp(6)
+  endTime   DateTime          @db.Timestamp(6)
   status    AppointmentStatus @default(PENDING)
   //id foranea de doctores
   doctorId  String
-  doctor    Doctor @relation(fields: [doctorId],references: [id])
+  doctor    Doctor            @relation(fields: [doctorId], references: [id])
   //id foranea de usuarios
   userId    String
-  user      User  @relation(fields: [userId],references: [id])
+  user      User              @relation(fields: [userId], references: [id])
   //campos obligatorios detalles de actualizacion e inserccion
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
   //resticcion para que un docotor no tenga la misma en cita en el mismo horario
   @@unique([doctorId, startTime])
+  //restriccion para que un usuario no tenga la misma cita en el mismo horario
+  @@unique([userId, startTime])
 }
 
 //estados de la cita
-enum AppointmentStatus{
+enum AppointmentStatus {
   PENDING
-  CANCELLED
+  CANCELED
   CONFIRMED
 }

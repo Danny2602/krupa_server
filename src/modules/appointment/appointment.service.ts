@@ -6,46 +6,102 @@ import { FilterAppointmentDto } from './dto/filter-appointment.dto';
 
 @Injectable()
 export class AppointmentService {
-  constructor(private prisma:PrismaService){}
+  constructor(private prisma: PrismaService) { }
 
-
-  async create(createAppointmentDto: CreateAppointmentDto,id:string) {    
-    try{
-      await this.prisma.appointment.create({ data: {
-        notes: createAppointmentDto.notes,
-        startTime: createAppointmentDto.startTime.replace(' ', 'T') + ':00.000Z',
-        endTime: createAppointmentDto.endTime.replace(' ', 'T') + ':00.000Z',
-        doctorId: createAppointmentDto.doctorId,
-        userId: id
-      }})
-      return 'Cita creada correctamente'
-    }catch(e){
-      // console.log(e)  
-      throw new HttpException('Error en la creación de la cita',HttpStatus.INTERNAL_SERVER_ERROR)
+  async create(createAppointmentDto: CreateAppointmentDto, id: string) {
+    try {
+      await this.prisma.appointment.create({
+        data: {
+          notes: createAppointmentDto.notes,
+          // Agregamos 'Z' para que Prisma lo trate como UTC y mantenga la hora exacta (ej: 10:00 se guarda como 10:00)
+          startTime: createAppointmentDto.startTime.replace(' ', 'T') + 'Z',
+          endTime: createAppointmentDto.endTime.replace(' ', 'T') + 'Z',
+          doctorId: createAppointmentDto.doctorId,
+          userId: id
+        }
+      })
+      return '¡Cita Agendada Exitosamente!'
+    } catch (e) {
+      if (e.code === 'P2002') {
+        const target = e.meta?.target;
+        // Verificar si el error es por el doctor (ya tiene cita)
+        if (target && target.includes('doctorId')) {
+          throw new HttpException('El doctor ya tiene una cita agendada en este horario', HttpStatus.CONFLICT);
+        }
+        // Verificar si el error es por el usuario (ya tiene cita)
+        if (target && target.includes('userId')) {
+          throw new HttpException('Ya tienes una cita agendada en este horario', HttpStatus.CONFLICT);
+        }
+      }
+      throw new HttpException('Error en la creación de la cita', HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
-  async getForDate(query:FilterAppointmentDto){
+  async getForDate(query: FilterAppointmentDto) {
     const start = new Date(`${query.days} 00:00:00`);
     const end = new Date(`${query.days} 23:59:59`);
-    const result=await this.prisma.appointment.findMany({
-      where:{
-        startTime:{
-          gte:start,
-          lte:end
+    const result = await this.prisma.appointment.findMany({
+      where: {
+        startTime: {
+          gte: start,
+          lte: end
         },
-        doctorId:query.doctorId
+        doctorId: query.doctorId
       },
-      
+
     })
-    if(result.length===0){
-      throw new HttpException('No existen fechas',HttpStatus.NOT_FOUND)
+    if (result.length === 0) {
+      throw new HttpException('No existen fechas', HttpStatus.NOT_FOUND)
     }
     return result
   }
 
-  findAll() {
-    return `This action returns all appointment`;
+  async getForUser(id: string) {
+    const [appointments, total, pending, canceled, completed] = await Promise.all([
+      this.prisma.appointment.findMany({
+        where: { userId: id }, orderBy: { startTime: 'asc' },
+        include: {
+          doctor: {
+            select: {
+              name: true, lastName: true, doctorSpecialty: {
+                include: { specialty: { select: { name: true } } }
+              }
+            },
+          }
+        }
+      }),
+      this.prisma.appointment.count({
+        where: { userId: id }
+      }),
+      this.prisma.appointment.count({
+        where: { userId: id, status: 'PENDING' }
+      }),
+      this.prisma.appointment.count({
+        where: { userId: id, status: 'CANCELED' }
+      }),
+      this.prisma.appointment.count({
+        where: { userId: id, status: 'CONFIRMED' }
+      })
+    ]);
+    // Transformar appointments para aplanar la estructura de los datos del doctor
+    const formattedAppointments = appointments.map(apt => ({
+      ...apt,
+      startTime: apt.startTime.toISOString().slice(0, 19).replace('T', ' '),
+      endTime: apt.endTime.toISOString().slice(0, 19).replace('T', ' '),
+      doctor: {
+        name: apt.doctor.name,
+        lastName: apt.doctor.lastName,
+        specialty: apt.doctor.doctorSpecialty[0]?.specialty.name || null
+      }
+    }));
+
+    return {
+      appointments: formattedAppointments,
+      total,
+      pending,
+      canceled,
+      completed
+    };
   }
 
   findOne(id: number) {
