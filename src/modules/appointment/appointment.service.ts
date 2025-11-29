@@ -1,11 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import { HttpCode, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { FilterAppointmentDto } from './dto/filter-appointment.dto';
 
 @Injectable()
 export class AppointmentService {
+  constructor(private prisma:PrismaService){}
   create(createAppointmentDto: CreateAppointmentDto) {
     return 'This action adds a new appointment';
+  }
+
+  async getForDate(query:FilterAppointmentDto){
+    const start = new Date(`${query.days} 00:00:00`);
+    const end = new Date(`${query.days} 23:59:59`);
+    const result=await this.prisma.appointment.findMany({
+      where:{
+        startTime:{
+          gte:start,
+          lte:end
+        },
+        doctorId:query.doctorId
+      },
+      
+    })
+    if(result.length===0){
+      throw new HttpException('No existen fechas',HttpStatus.NOT_FOUND)
+    }
+    return result
   }
 
   findAll() {
