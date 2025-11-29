@@ -1,18 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseDatePipe, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseDatePipe, Query, UseGuards, HttpCode } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import { queryObjects } from 'v8';
 import { FilterAppointmentDto } from './dto/filter-appointment.dto';
 import { AuthGuard } from '../auth/guards/auth/auth.guard';
+import { GetUser } from '../auth/decorators/get-user.decorator';
+import * as client from '@prisma/client';
+
 
 @Controller('appointment')
 export class AppointmentController {
   constructor(private readonly appointmentService: AppointmentService) {}
 
   @Post()
-  create(@Body() createAppointmentDto: CreateAppointmentDto) {
-    return this.appointmentService.create(createAppointmentDto);
+  @HttpCode(201)
+  @UseGuards(AuthGuard)
+  create(@Body() createAppointmentDto: CreateAppointmentDto,@GetUser() user:client.User) {
+    
+    return this.appointmentService.create(createAppointmentDto,user.id);
   }
 
   @Get()

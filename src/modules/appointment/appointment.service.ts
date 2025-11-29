@@ -7,8 +7,22 @@ import { FilterAppointmentDto } from './dto/filter-appointment.dto';
 @Injectable()
 export class AppointmentService {
   constructor(private prisma:PrismaService){}
-  create(createAppointmentDto: CreateAppointmentDto) {
-    return 'This action adds a new appointment';
+
+
+  async create(createAppointmentDto: CreateAppointmentDto,id:string) {    
+    try{
+      await this.prisma.appointment.create({ data: {
+        notes: createAppointmentDto.notes,
+        startTime: createAppointmentDto.startTime.replace(' ', 'T') + ':00.000Z',
+        endTime: createAppointmentDto.endTime.replace(' ', 'T') + ':00.000Z',
+        doctorId: createAppointmentDto.doctorId,
+        userId: id
+      }})
+      return 'Cita creada correctamente'
+    }catch(e){
+      // console.log(e)  
+      throw new HttpException('Error en la creación de la cita',HttpStatus.INTERNAL_SERVER_ERROR)
+    }
   }
 
   async getForDate(query:FilterAppointmentDto){
