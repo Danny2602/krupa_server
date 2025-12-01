@@ -23,17 +23,22 @@ export class RolesGuard implements CanActivate {
         const request = context.switchToHttp().getRequest();
         const user = request.user;
 
-        // SUPER_ADMIN tiene acceso a TODO
-        if (user.role === 'SUPER_ADMIN') {
-            return true;
-        }
+        // Definimos la jerarquía de roles (mayor número = más privilegios)
+        const roleHierarchy: Record<Role, number> = {
+            USER: 1,
+            ADMIN: 2,
+            SUPER_ADMIN: 3,
+        };
 
-        // Si el rol es ADMIN y la ruta requiere USER, permitir acceso (jerarquía)
-        if (user.role === 'ADMIN' && requiredRoles.includes('USER')) {
-            return true;
-        }
+        // Obtenemos el nivel del rol del usuario
+        const userRoleLevel = roleHierarchy[user.role];
 
-        // Verificamos si el usuario tiene alguno de los roles requeridos
-        return requiredRoles.some((role) => user.role === role);
+        // Obtenemos el nivel mínimo requerido (el más alto de los roles requeridos)
+        const minRequiredLevel = Math.min(
+            ...requiredRoles.map((role) => roleHierarchy[role])
+        );
+
+        // El usuario puede acceder si su nivel es mayor o igual al nivel mínimo requerido
+        return userRoleLevel >= minRequiredLevel;
     }
 }

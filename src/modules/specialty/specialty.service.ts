@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpCode, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateSpecialtyDto } from './dto/create-specialty.dto';
 import { UpdateSpecialtyDto } from './dto/update-specialty.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -6,8 +6,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class SpecialtyService {
   constructor (private prisma:PrismaService){}
-  create(createSpecialtyDto: CreateSpecialtyDto) {
-    return 'This action adds a new specialty';
+
+  async create(createSpecialtyDto: CreateSpecialtyDto) {
+    const result = await this.prisma.specialty.create({data:createSpecialtyDto})
+    if(!result){
+      throw new HttpException('Error en la creación',HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+    throw new HttpException('Especialidad creada Correctamente',HttpStatus.CREATED)
   }
 
   getAll() {

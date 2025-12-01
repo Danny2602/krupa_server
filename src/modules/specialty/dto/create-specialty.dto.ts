@@ -1,1 +1,4 @@
-export class CreateSpecialtyDto {}
+export class CreateSpecialtyDto {
+    name: string
+    color?: string
+}
