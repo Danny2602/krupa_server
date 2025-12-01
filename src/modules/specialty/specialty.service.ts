@@ -8,11 +8,28 @@ export class SpecialtyService {
   constructor (private prisma:PrismaService){}
 
   async create(createSpecialtyDto: CreateSpecialtyDto) {
-    const result = await this.prisma.specialty.create({data:createSpecialtyDto})
-    if(!result){
+    console.log(createSpecialtyDto)
+    try{
+      await this.prisma.specialty.create({data:createSpecialtyDto})
+      return {message:'Especialidad creada Correctamente'}
+    } catch (error) {
+      
       throw new HttpException('Error en la creación',HttpStatus.INTERNAL_SERVER_ERROR)
     }
-    throw new HttpException('Especialidad creada Correctamente',HttpStatus.CREATED)
+  }
+
+  async update(id: number, updateSpecialtyDto: UpdateSpecialtyDto) {
+    try{
+        await this.prisma.specialty.update({
+        where: {
+          id: id,
+        },
+        data: updateSpecialtyDto,
+      });
+      return {message:'Especialidad actualizada Correctamente'}
+    }catch{
+      throw new HttpException('Error en la actualización',HttpStatus.INTERNAL_SERVER_ERROR)
+    }
   }
 
   getAll() {
@@ -23,9 +40,6 @@ export class SpecialtyService {
     return `This action returns a #${id} specialty`;
   }
 
-  update(id: number, updateSpecialtyDto: UpdateSpecialtyDto) {
-    return `This action updates a #${id} specialty`;
-  }
 
   remove(id: number) {
     return `This action removes a #${id} specialty`;

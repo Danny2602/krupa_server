@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { SpecialtyService } from './specialty.service';
 import { CreateSpecialtyDto } from './dto/create-specialty.dto';
 import { UpdateSpecialtyDto } from './dto/update-specialty.dto';
@@ -23,14 +23,11 @@ export class SpecialtyController {
   getAll() {
     return this.specialtyService.getAll();
   }
-
-  @Get(':id')
-  getOne(@Param('id') id: string) {
-    return this.specialtyService.getOne(+id);
-  }
-
+  
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSpecialtyDto: UpdateSpecialtyDto) {
+  @Roles('ADMIN')
+  @UseGuards(AuthGuard,RolesGuard)
+  update(@Param('id',ParseIntPipe) id: number, @Body() updateSpecialtyDto: UpdateSpecialtyDto) {
     return this.specialtyService.update(+id, updateSpecialtyDto);
   }
 
