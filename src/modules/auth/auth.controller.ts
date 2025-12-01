@@ -80,7 +80,7 @@ export class AuthController {
     res.cookie(COOKIE_NAME, result.token, COOKIE_CONFIG);
 
     // Redirigir al frontend
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendUrl = process.env.FRONTEND_URL;
     return res.redirect(`${frontendUrl}/user/home`);
   }
 }

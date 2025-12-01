@@ -45,7 +45,7 @@ export class AuthService {
         return {
           isAuthenticated: true,
           message: 'Sesión activa',
-          user: { id: userExist.id, email: userExist.email },
+          user: { id: userExist.id, email: userExist.email, role: userExist.role },
         };
       } catch (error) {
         throw new UnauthorizedException('Token inválido o expirado');
@@ -62,7 +62,7 @@ export class AuthService {
     return {
       isAuthenticated: true,
       message: 'Usuario autenticado',
-      user: { id: userExist.id, email: userExist.email, avatar: userExist.avatar },
+      user: { id: userExist.id, email: userExist.email, avatar: userExist.avatar, role: userExist.role },
     };
   }
 
@@ -73,16 +73,22 @@ export class AuthService {
    * @returns Objeto con mensaje, token y datos del usuario
    */
   async validateGoogleUser(googleUser: GoogleUser) {
-    // 1. Buscar por googleId (lo más seguro y robusto)
+    // Buscar por googleId (lo más seguro y robusto)
     const userByGoogleId = await this.prisma.user.findUnique({
       where: { googleId: googleUser.googleId },
     });
 
     if (userByGoogleId) {
+      //NUEVO: Verificar que no sea ADMIN o SUPER_ADMIN
+      if (userByGoogleId.role === 'ADMIN' || userByGoogleId.role === 'SUPER_ADMIN') {
+        throw new UnauthorizedException(
+          'Los administradores no pueden iniciar sesión con Google. Use credenciales normales.'
+        );
+      }
       return this.generateToken(userByGoogleId);
     }
 
-    // 2. Si no existe por googleId, buscar por email (para vincular cuentas)
+    // Si no existe por googleId, buscar por email (para vincular cuentas)
     const userByEmail = await this.prisma.user.findUnique({
       where: { email: googleUser.email },
     });
@@ -96,7 +102,7 @@ export class AuthService {
       return this.generateToken(updatedUser);
     }
 
-    // 3. Usuario nuevo -> Crear en BD con googleId
+    // Usuario nuevo -> Crear en BD con googleId
     const newUser = await this.prisma.user.create({
       data: {
         email: googleUser.email,
@@ -110,9 +116,9 @@ export class AuthService {
   }
 
   private async generateToken(user: any) {
-    const payload = { email: user.email, sub: user.id };
+    const payload = { email: user.email, sub: user.id, role: user.role };
     const token = await this.jwtService.signAsync(payload);
-    return { message: 'Login exitoso', token: token, user: { id: user.id, email: user.email } };
+    return { message: 'Login exitoso', token: token, user: { id: user.id, email: user.email, role: user.role } };
   }
 
 

@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GoogleStrategy } from './strategies/google.strategy';
-
+import { RolesGuard } from './guards/roles/roles.guard';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'google' }),
@@ -23,6 +23,6 @@ import { GoogleStrategy } from './strategies/google.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService, GoogleStrategy],
+  providers: [AuthService, PrismaService, GoogleStrategy, RolesGuard],
 })
 export class AuthModule { }
