@@ -3,6 +3,8 @@ import { DoctorService } from './doctor.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { AuthGuard } from '../auth/guards/auth/auth.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles/roles.guard';
 
 @Controller('doctor')
 export class DoctorController {
@@ -14,19 +16,17 @@ export class DoctorController {
   }
 
   @Get()
-  findAll() {
-    return this.doctorService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.doctorService.findOne(+id);
+  @Roles('ADMIN')
+  @UseGuards(AuthGuard,RolesGuard)
+  getAll() {
+    return this.doctorService.getAll();
   }
 
 
   @Get('specialty/:id')
   @HttpCode(200)
-  @UseGuards(AuthGuard)
+  @Roles('USER')
+  @UseGuards(AuthGuard,RolesGuard)
   getDoctorForSpecialty(@Param('id',ParseIntPipe) id:number){
     return  this.doctorService.getDoctorForSpecialty(id)
   }

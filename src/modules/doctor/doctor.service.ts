@@ -13,9 +13,23 @@ constructor(private prisma:PrismaService) {
     return 'This action adds a new doctor';
   }
 
-  findAll() {
-    return `This action returns all doctor`;
+  async getAll() {
+    const result = await this.prisma.doctor.findMany({
+      include:{
+        doctorSpecialty:{
+          select:{specialty:{select:{name:true,color:true}}}
+        }
+      }
+    })
+    if(!result){
+      throw new HttpException(
+        `Doctores no encontrados`,
+        HttpStatus.NO_CONTENT
+      )
+    }
+    return result
   }
+  
 
   async getDoctorForSpecialty(id:number){
     const result=await this.prisma.doctor.findMany({
