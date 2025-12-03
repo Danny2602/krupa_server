@@ -41,7 +41,8 @@ model User {
 model Specialty {
   id              Int               @id @default(autoincrement())
   name            String            @unique
-  color           String?           @unique
+  color           String?           @db.VarChar(10) @unique
+  icon            String?           @unique
   //lado reverso de tabla intermedia
   doctorSpecialty DoctorSpecialty[]
 }

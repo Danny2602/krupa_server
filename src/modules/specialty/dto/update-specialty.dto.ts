@@ -7,4 +7,6 @@ export class UpdateSpecialtyDto extends PartialType(CreateSpecialtyDto) {
     name?: string;
     @IsString()
     color?: string;
+    @IsString()
+    icon?: string;
 }
