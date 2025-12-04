@@ -2,15 +2,36 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Specialty } from '../specialty/entities/specialty.entity';
+import { spec } from 'node:test/reporters';
 
 @Injectable()
 export class DoctorService {
-constructor(private prisma:PrismaService) {
-  
-}
+  constructor(private prisma:PrismaService) {
+    
+  }
 
-  create(createDoctorDto: CreateDoctorDto) {
-    return 'This action adds a new doctor';
+  async create(createDoctorDto: CreateDoctorDto) {
+    const {specialties=[],...doctorData}=createDoctorDto;
+    const result = await this.prisma.doctor.create({data:{
+      ...doctorData,
+      doctorSpecialty:{
+        create: specialties.map(specialtyId => ({
+          specialtyId: specialtyId  
+        }))
+      }
+    },include:{
+      doctorSpecialty:{
+          select:{specialty:{select:{name:true,color:true}}}
+        }
+    }})
+    if(!result){
+      throw new HttpException(
+        `Problema al crear doctor`,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
+    }
+    return result;
   }
 
   async getAll() {
