@@ -11,6 +11,8 @@ export class DoctorController {
   constructor(private readonly doctorService: DoctorService) {}
 
   @Post()
+  @Roles('ADMIN')
+  @UseGuards(AuthGuard,RolesGuard)
   create(@Body() createDoctorDto: CreateDoctorDto) {
     return this.doctorService.create(createDoctorDto);
   }
@@ -32,8 +34,10 @@ export class DoctorController {
   }
 
   @Patch(':id')
+  @Roles('ADMIN')
+  @UseGuards(AuthGuard,RolesGuard)
   update(@Param('id') id: string, @Body() updateDoctorDto: UpdateDoctorDto) {
-    return this.doctorService.update(+id, updateDoctorDto);
+    return this.doctorService.update(id, updateDoctorDto);
   }
 
   @Delete(':id')

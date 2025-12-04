@@ -22,7 +22,7 @@ export class DoctorService {
       }
     },include:{
       doctorSpecialty:{
-          select:{specialty:{select:{name:true,color:true}}}
+          select:{specialty:{select:{id:true,name:true,color:true}}}
         }
     }})
     if(!result){
@@ -38,7 +38,7 @@ export class DoctorService {
     const result = await this.prisma.doctor.findMany({
       include:{
         doctorSpecialty:{
-          select:{specialty:{select:{name:true,color:true}}}
+          select:{specialty:{select:{id:true,name:true,color:true}}}
         }
       }
     })
@@ -68,12 +68,35 @@ export class DoctorService {
     return result
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} doctor`;
+  async update(id: string, updateDoctorDto: UpdateDoctorDto) {
+    console.log(updateDoctorDto)
+    const {specialties=[],...doctorData}=updateDoctorDto;
+    const result = await this.prisma.doctor.update({
+      where:{id:id},
+      data:{
+        ...doctorData,
+        doctorSpecialty:{
+          deleteMany:{},// borra todas las especialidades del doctor en una sola consulta
+          create: specialties.map(specialtyId => ({
+            specialtyId: specialtyId
+          }))
+        }
+      },
+      include:{
+        doctorSpecialty:{
+          select:{specialty:{select:{id:true,name:true,color:true}}}
+        }
+    }})
+    if(!result){
+      throw new HttpException(
+        `Problema al actualizar doctor`,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
+    }
+    return result;
   }
-
-  update(id: number, updateDoctorDto: UpdateDoctorDto) {
-    return `This action updates a #${id} doctor`;
+   findOne(id: number) {
+    return `This action returns a #${id} doctor`;
   }
 
   remove(id: number) {
