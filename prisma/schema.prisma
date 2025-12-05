@@ -58,6 +58,7 @@ model Doctor {
   tlf       String?
   biography String?
   photo     String?
+  isActive    Boolean  @default(true) 
   //campos obligatorios detalles de actualizacion e inserccion
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

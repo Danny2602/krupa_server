@@ -36,6 +36,7 @@ export class DoctorService {
 
   async getAll() {
     const result = await this.prisma.doctor.findMany({
+      where:{isActive:true},
       include:{
         doctorSpecialty:{
           select:{specialty:{select:{id:true,name:true,color:true}}}
@@ -54,7 +55,8 @@ export class DoctorService {
 
   async getDoctorForSpecialty(id:number){
     const result=await this.prisma.doctor.findMany({
-      where:{doctorSpecialty:{some:{specialtyId:id}}},// trae los datos del doctor
+      where:{doctorSpecialty:{some:{specialtyId:id}}, isActive:true},
+      // trae los datos del doctor
       include:{doctorSpecialty:{select:{specialty:{select:{name:true}}}}}// trae ademas que specialidad tiene
     })
     if(!result){
@@ -95,11 +97,21 @@ export class DoctorService {
     }
     return result;
   }
-   findOne(id: number) {
-    return `This action returns a #${id} doctor`;
-  }
+  
 
-  remove(id: number) {
-    return `This action removes a #${id} doctor`;
+  async remove(id: string) {
+    const result= await this.prisma.doctor.update({
+      where:{id:id},
+      data:{
+        isActive:false
+      }
+    })
+    if(!result){
+      throw new HttpException(
+        `Problema al eliminar doctor`,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
+    }
+    return 'Doctor Eliminado';
   }
 }

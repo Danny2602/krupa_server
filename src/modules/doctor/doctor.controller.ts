@@ -42,6 +42,7 @@ export class DoctorController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.doctorService.remove(+id);
+    console.log(id)
+    return this.doctorService.remove(id);
   }
 }
