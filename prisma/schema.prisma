@@ -69,6 +69,7 @@ model Doctor {
   doctorSpecialty DoctorSpecialty[]
 }
 
+
 model DoctorSpecialty {
   id          Int       @id @default(autoincrement())
   //id foranea doctores
