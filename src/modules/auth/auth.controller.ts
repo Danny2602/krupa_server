@@ -68,7 +68,7 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(PassportAuthGuard('google'))
   async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    // Validar que el usuario exista en req.user
+    try {
     if (!req.user) {
       return res.status(401).json({ message: 'Error en autenticación con Google' });
     }
@@ -81,6 +81,11 @@ export class AuthController {
 
     // Redirigir al frontend
     const frontendUrl = process.env.FRONTEND_URL;
+
     return res.redirect(`${frontendUrl}/user/home`);
+    } catch (error) {
+      console.log('Error en la validación de Google User', error);
+      return res.status(401).json({ message: 'Error en la validación de Google User' });
+    }
   }
 }
