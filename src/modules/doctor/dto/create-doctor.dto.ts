@@ -1,4 +1,4 @@
-import { IsArray, IsString, Max } from "class-validator"
+import { IsArray, IsString, Length, Max } from "class-validator"
 
 export class CreateDoctorDto {
     @IsString()
@@ -8,12 +8,10 @@ export class CreateDoctorDto {
     @IsString()
     email     :string
     @IsString()
-    @Max(10,{message:'El telefono no puede tener mas de 10 caracteres'})
+    @Length(9,10,{message:'El telefono debe tener 9 o 10 digitos'})
     tlf?       :string
     @IsString()
     biography? :string
-    @IsString()
-    photo?     :string
     @IsArray()
     specialties?:number[]
 }
