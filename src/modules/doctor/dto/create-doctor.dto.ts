@@ -1,5 +1,5 @@
 import { IsArray, IsString, Length, Max } from "class-validator"
-
+import type { Express } from "express"
 export class CreateDoctorDto {
     @IsString()
     name      :string
