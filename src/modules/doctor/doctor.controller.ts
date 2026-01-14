@@ -7,22 +7,24 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles/roles.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Express } from 'express';
+import { CloundinaryService } from '../cloundinary/cloundinary.service';
 @Controller('doctor')
 export class DoctorController {
-  constructor(private readonly doctorService: DoctorService) {}
+  constructor(private readonly doctorService: DoctorService,private cloudinaryService:CloundinaryService
+    
+  ) {}
 
   @Post()
   @Roles('ADMIN')
   @UseInterceptors(FileInterceptor('photo'))
   @UseGuards(AuthGuard,RolesGuard)
-  create(@Body() createDoctorDto: CreateDoctorDto,@UploadedFile() photo: Express.Multer.File) {
-    console.log(createDoctorDto,photo);
-    if (photo) {
-      console.log('Photo received:', photo.originalname, photo.mimetype, photo.size);
-    } else {
-      console.log('No photo received');
-    }
-    // return this.doctorService.create(createDoctorDto);
+  async create(@Body() createDoctorDto: CreateDoctorDto,@UploadedFile() photo: Express.Multer.File) {
+    const url = await this.cloudinaryService.uploadImage(photo,'doctor');
+    const doctor ={
+      ...createDoctorDto,
+      photo:url as string
+    };
+    return this.doctorService.create(doctor);
   }
 
   @Get()

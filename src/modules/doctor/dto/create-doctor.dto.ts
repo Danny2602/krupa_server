@@ -10,6 +10,8 @@ export class CreateDoctorDto {
     @IsString()
     @Length(9,10,{message:'El telefono debe tener 9 o 10 digitos'})
     tlf?       :string
+  
+    photo?  :string
     @IsString()
     biography? :string
     @IsArray()

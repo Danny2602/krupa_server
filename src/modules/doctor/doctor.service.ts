@@ -17,7 +17,7 @@ export class DoctorService {
       ...doctorData,
       doctorSpecialty:{
         create: specialties.map(specialtyId => ({
-          specialtyId: specialtyId  
+          specialtyId: Number(specialtyId)  
         }))
       }
     },include:{
