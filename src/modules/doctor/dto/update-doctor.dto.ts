@@ -14,7 +14,6 @@ export class UpdateDoctorDto extends PartialType(CreateDoctorDto) {
     tlf?       :string
     @IsString()
     biography? :string
-    @IsString()
     photo?     :string
     @IsArray()
     specialties?:number[]

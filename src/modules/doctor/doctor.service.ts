@@ -80,7 +80,7 @@ export class DoctorService {
         doctorSpecialty:{
           deleteMany:{},// borra todas las especialidades del doctor en una sola consulta
           create: specialties.map(specialtyId => ({
-            specialtyId: specialtyId
+            specialtyId: Number(specialtyId)
           }))
         }
       },
@@ -114,4 +114,19 @@ export class DoctorService {
     }
     return 'Doctor Eliminado';
   }
+
+
+  async getDoctorById(id:string){
+    const doctor=await this.prisma.doctor.findUnique({
+      where:{id:id}
+    })
+    if(!doctor){
+      throw new HttpException(
+        `Doctor no encontrado`,
+        HttpStatus.NO_CONTENT
+      )
+    }
+    return doctor
+  }
+  
 }

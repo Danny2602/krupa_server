@@ -8,6 +8,7 @@ import { RolesGuard } from '../auth/guards/roles/roles.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Express } from 'express';
 import { CloundinaryService } from '../cloundinary/cloundinary.service';
+import { get } from 'http';
 @Controller('doctor')
 export class DoctorController {
   constructor(private readonly doctorService: DoctorService,private cloudinaryService:CloundinaryService
@@ -18,6 +19,7 @@ export class DoctorController {
   @Roles('ADMIN')
   @UseInterceptors(FileInterceptor('photo'))
   @UseGuards(AuthGuard,RolesGuard)
+  @HttpCode(201)
   async create(@Body() createDoctorDto: CreateDoctorDto,@UploadedFile() photo: Express.Multer.File) {
     const url = await this.cloudinaryService.uploadImage(photo,'doctor');
     const doctor ={
@@ -46,7 +48,18 @@ export class DoctorController {
   @Patch(':id')
   @Roles('ADMIN')
   @UseGuards(AuthGuard,RolesGuard)
-  update(@Param('id') id: string, @Body() updateDoctorDto: UpdateDoctorDto) {
+  @HttpCode(200)
+  @UseInterceptors(FileInterceptor('photo'))
+  async update(@Param('id') id: string, @Body() updateDoctorDto: UpdateDoctorDto,@UploadedFile() photo: Express.Multer.File) {
+    if(photo){
+      const doctor= await this.doctorService.getDoctorById(id);
+      const url = await this.cloudinaryService.uploadImage(photo,'doctor');
+      if(url){
+        
+        await this.cloudinaryService.deleteImage(doctor.photo as string);
+      }
+      updateDoctorDto.photo=url as string
+    }
     return this.doctorService.update(id, updateDoctorDto);
   }
 
