@@ -11,27 +11,63 @@ export class DoctorService {
     
   }
 
+  async validateCreate(createDoctorDto: CreateDoctorDto) {
+    const { specialties = [], ...doctorData } = createDoctorDto;
+
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.doctor.create({
+          data: {
+            ...doctorData,
+            doctorSpecialty: {
+              create: specialties.map(specialtyId => ({
+                specialtyId: Number(specialtyId)
+              }))
+            }
+          }
+        });
+        throw new Error('VALIDATION_PASSED_ROLLBACK');
+      });
+    } catch (e) {
+      if (e.message === 'VALIDATION_PASSED_ROLLBACK') {
+        return true; 
+      }
+      if (e.code === 'P2002') {
+        throw new HttpException(`El email ${createDoctorDto.email} ya está en uso.`, HttpStatus.BAD_REQUEST);
+      }
+      if (e.code === 'P2003') {
+        throw new HttpException(`Uno de los datos relacionados (ej. especialidad) no existe.`, HttpStatus.BAD_REQUEST);
+      }
+      throw e;
+    }
+  }
+
   async create(createDoctorDto: CreateDoctorDto) {
     const {specialties=[],...doctorData}=createDoctorDto;
-    const result = await this.prisma.doctor.create({data:{
-      ...doctorData,
-      doctorSpecialty:{
-        create: specialties.map(specialtyId => ({
-          specialtyId: Number(specialtyId)  
-        }))
+      try{
+        const result = await this.prisma.doctor.create({data:{
+          ...doctorData,
+          doctorSpecialty:{
+            create: specialties.map(specialtyId => ({
+              specialtyId: Number(specialtyId)  
+            }))
+          }
+        },include:{
+          doctorSpecialty:{
+              select:{specialty:{select:{id:true,name:true,color:true}}}
+            }
+      }})
+      if(!result){
+        throw new HttpException(
+          `Problema al crear doctor`,
+          HttpStatus.INTERNAL_SERVER_ERROR
+        )
       }
-    },include:{
-      doctorSpecialty:{
-          select:{specialty:{select:{id:true,name:true,color:true}}}
-        }
-    }})
-    if(!result){
-      throw new HttpException(
-        `Problema al crear doctor`,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
+      return result;
+      }catch(e){
+        throw e
     }
-    return result;
+    
   }
 
   async getAll() {

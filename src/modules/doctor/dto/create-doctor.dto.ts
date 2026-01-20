@@ -1,4 +1,5 @@
-import { IsArray, IsString, Length, Max } from "class-validator"
+import { Transform } from "class-transformer"
+import { isArray, IsArray, IsNumber, IsString, Length, Max } from "class-validator"
 import type { Express } from "express"
 export class CreateDoctorDto {
     @IsString()
@@ -14,6 +15,13 @@ export class CreateDoctorDto {
     photo?  :string
     @IsString()
     biography? :string
-    @IsArray()
+    @IsArray({message:'El doctor debe tener al menos un especialidad'})
+    @Transform(({ value }) => {
+            if (!value) return [];
+            if (Array.isArray(value)) {
+                return value.map((v) => Number(v));
+        }
+        return [Number(value)];
+    })
     specialties?:number[]
 }

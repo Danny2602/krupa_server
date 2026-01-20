@@ -11,7 +11,7 @@ export class CloundinaryService {
     async uploadImage(file: any, folderName: string) {
         return new Promise((resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
-                { folder: folderName },
+                { folder: ('Krupa/' + folderName)},
                 (error, result) => {
                     if (error) return reject(error);
                     resolve(result?.secure_url);

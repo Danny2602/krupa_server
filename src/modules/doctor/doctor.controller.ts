@@ -1,4 +1,4 @@
-import { UseInterceptors, UploadedFile, Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, HttpCode, UseGuards } from '@nestjs/common';
+import { UseInterceptors, UploadedFile, Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, HttpCode, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
 import { DoctorService } from './doctor.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
@@ -21,12 +21,20 @@ export class DoctorController {
   @UseGuards(AuthGuard,RolesGuard)
   @HttpCode(201)
   async create(@Body() createDoctorDto: CreateDoctorDto,@UploadedFile() photo: Express.Multer.File) {
-    const url = await this.cloudinaryService.uploadImage(photo,'doctor');
-    const doctor ={
-      ...createDoctorDto,
-      photo:url as string
-    };
-    return this.doctorService.create(doctor);
+    try{
+      const confirmed = await this.doctorService.validateCreate(createDoctorDto);
+      if(!confirmed){
+        throw new HttpException('Error en la creación',HttpStatus.INTERNAL_SERVER_ERROR)
+      }
+      const url = await this.cloudinaryService.uploadImage(photo,'doctor');
+      const doctor ={
+        ...createDoctorDto,
+        photo:url as string
+      };
+        return await this.doctorService.create(doctor);
+    }catch(e){
+      throw e;
+    }
   }
 
   @Get()
