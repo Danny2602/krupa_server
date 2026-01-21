@@ -81,8 +81,12 @@ export class AuthController {
 
     // Redirigir al frontend
     const frontendUrl = process.env.FRONTEND_URL;
-
-    return res.redirect(`${frontendUrl}/user/home`);
+    if(result.user.role == "USER"){
+      return res.redirect(`${frontendUrl}/user/home`);
+    }else{
+      return res.redirect(`${frontendUrl}/doctor/home`);
+    }
+    // return res.redirect(`${frontendUrl}/user/home`);
     } catch (error) {
       console.log('Error en la validación de Google User', error);
       return res.status(401).json({ message: 'Error en la validación de Google User' });
