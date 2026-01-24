@@ -107,7 +107,6 @@ export class DoctorService {
   }
 
   async update(id: string, updateDoctorDto: UpdateDoctorDto) {
-    console.log(updateDoctorDto)
     const {specialties=[],...doctorData}=updateDoctorDto;
     const result = await this.prisma.doctor.update({
       where:{id:id},
