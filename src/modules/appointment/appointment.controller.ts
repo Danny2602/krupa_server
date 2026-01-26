@@ -6,6 +6,8 @@ import { FilterAppointmentDto } from './dto/filter-appointment.dto';
 import { AuthGuard } from '../auth/guards/auth/auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import * as client from '@prisma/client';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles/roles.guard';
 
 
 @Controller('appointment')
@@ -32,18 +34,11 @@ export class AppointmentController {
     return this.appointmentService.getForUser(user.id);
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.appointmentService.findOne(+id);
-  // }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAppointmentDto: UpdateAppointmentDto) {
-    return this.appointmentService.update(+id, updateAppointmentDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.appointmentService.remove(+id);
+  @Get('/doctor')
+  @Roles('DOCTOR')
+  @HttpCode(200)
+  @UseGuards(AuthGuard,RolesGuard)
+  getDoctor(@GetUser() user: client.Doctor) {
+    return this.appointmentService.getAppointmentForDoctor(user.id);
   }
 }

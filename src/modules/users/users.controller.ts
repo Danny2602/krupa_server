@@ -6,6 +6,7 @@ import { AuthGuard } from '../auth/guards/auth/auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import type { Request } from 'express';
 import * as client from '@prisma/client';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 
 @Controller('users')
@@ -27,6 +28,7 @@ export class UsersController {
   @Get('profile')
   @HttpCode(200)
   @UseGuards(AuthGuard)
+  @Roles('USER')
   getIdUser(@GetUser() user: client.User) {
     return this.usersService.getIdUser(user.id);
   }

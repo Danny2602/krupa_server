@@ -32,7 +32,6 @@ export class UsersService {
   }
 
   async getIdUser(id: string) {
-    console.log(typeof id, `: ${id}`)
     return this.prisma.user.findUnique({ where: { id } });
   }
 

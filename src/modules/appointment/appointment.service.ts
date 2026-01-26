@@ -104,15 +104,18 @@ export class AppointmentService {
     };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} appointment`;
-  }
-
-  update(id: number, updateAppointmentDto: UpdateAppointmentDto) {
-    return `This action updates a #${id} appointment`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} appointment`;
-  }
+  async getAppointmentForDoctor(userId:string){
+      const doctor=await this.prisma.doctor.findUnique({
+        where:{id:userId},include:{
+          appointments:true
+        }
+      })
+      if(!doctor){
+        throw new HttpException(
+          `Citas no encontradas`,
+          HttpStatus.NO_CONTENT
+        )
+      }
+      return doctor
+    }
 }

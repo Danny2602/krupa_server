@@ -26,9 +26,10 @@ export class RolesGuard implements CanActivate {
         // Definimos la jerarquía de roles (mayor número = más privilegios)
         const roleHierarchy: Record<Role, number> = {
             USER: 1,
-            ADMIN: 2,
-            SUPER_ADMIN: 3,
-            DOCTOR: 4,
+            DOCTOR: 2,
+            ADMIN: 3,
+            SUPER_ADMIN: 4,
+            
         };
 
         // Obtenemos el nivel del rol del usuario

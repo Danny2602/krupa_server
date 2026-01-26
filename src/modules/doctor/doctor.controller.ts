@@ -8,7 +8,7 @@ import { RolesGuard } from '../auth/guards/roles/roles.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Express } from 'express';
 import { CloundinaryService } from '../cloundinary/cloundinary.service';
-import { get } from 'http';
+
 @Controller('doctor')
 export class DoctorController {
   constructor(private readonly doctorService: DoctorService,private cloudinaryService:CloundinaryService
@@ -71,9 +71,10 @@ export class DoctorController {
     return this.doctorService.update(id, updateDoctorDto);
   }
 
+
+
   @Delete(':id')
   remove(@Param('id') id: string) {
-   
     return this.doctorService.remove(id);
   }
 }

@@ -2,8 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Specialty } from '../specialty/entities/specialty.entity';
-import { spec } from 'node:test/reporters';
+
 
 @Injectable()
 export class DoctorService {
@@ -163,5 +162,6 @@ export class DoctorService {
     }
     return doctor
   }
+
   
 }
