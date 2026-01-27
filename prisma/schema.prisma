@@ -33,6 +33,8 @@ model User {
   role         Role          @default(USER)
   //lado inverso de citas
   appointments Appointment[]
+  //Lado inverso de doctores
+  doctor       Doctor?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -63,7 +65,9 @@ model Doctor {
   //campos obligatorios detalles de actualizacion e inserccion
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  //relacion con usuario
+  UserId   String?   @unique
+  user      User?     @relation(fields: [UserId], references: [id])
   //lado inverso de citas
   appointments    Appointment[]
   //lado inverso tabla intermedia

@@ -104,10 +104,10 @@ export class AppointmentService {
     };
   }
 
-  async getAppointmentForDoctor(userId:string){
-      const doctor=await this.prisma.doctor.findUnique({
-        where:{id:userId},include:{
-          appointments:true
+  async getAppointmentForDoctor(doctorId:string){
+      const doctor=await this.prisma.appointment.findMany({
+        where:{doctor:{UserId:doctorId}},include:{
+          user:true
         }
       })
       if(!doctor){
@@ -116,6 +116,18 @@ export class AppointmentService {
           HttpStatus.NO_CONTENT
         )
       }
-      return doctor
+      return doctor.map(apt=>{
+        return{
+          id:apt.id,
+          name:apt.user.name,
+          email:apt.user.email,
+          notes:apt.notes,
+          status:apt.status,
+          startTime:apt.startTime,
+          endTime:apt.endTime,
+          type:'Cita Medica'
+        }
+      })
+      
     }
 }
