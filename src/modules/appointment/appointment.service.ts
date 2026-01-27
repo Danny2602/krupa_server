@@ -3,6 +3,8 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FilterAppointmentDto } from './dto/filter-appointment.dto';
+import { UpdateStatusAppointmentDto } from './dto/update-status-appointment';
+import { AppointmentStatus } from '@prisma/client';
 
 @Injectable()
 export class AppointmentService {
@@ -123,11 +125,33 @@ export class AppointmentService {
           email:apt.user.email,
           notes:apt.notes,
           status:apt.status,
-          startTime:apt.startTime,
-          endTime:apt.endTime,
+          startTime:apt.startTime.toISOString().slice(0, 19).replace('T', ' '),
+          endTime:apt.endTime.toISOString().slice(0, 19).replace('T', ' '),
           type:'Cita Medica'
         }
       })
-      
     }
+
+    async updateForStatus(id:string,updateStatusAppointmentDto:UpdateStatusAppointmentDto){
+      await this.prisma.$transaction(async (tx) => {
+        const appointment=await tx.appointment.findUnique({
+          where:{id:id}
+        })
+        if(!appointment){
+          throw new HttpException(
+            `Cita no encontrada`,
+            HttpStatus.NO_CONTENT
+          )
+        }
+        await tx.appointment.update({
+          where:{id:id},
+          data:{
+            status:updateStatusAppointmentDto.status as AppointmentStatus
+          }
+        })
+        
+      });
+      return `Cita actualizada a ${updateStatusAppointmentDto.status}`;
+    }
+
 }

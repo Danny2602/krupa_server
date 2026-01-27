@@ -8,6 +8,7 @@ import { GetUser } from '../auth/decorators/get-user.decorator';
 import * as client from '@prisma/client';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles/roles.guard';
+import { UpdateStatusAppointmentDto } from './dto/update-status-appointment';
 
 
 @Controller('appointment')
@@ -16,9 +17,9 @@ export class AppointmentController {
 
   @Post()
   @HttpCode(201)
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard,RolesGuard)
+  @Roles('USER')
   create(@Body() createAppointmentDto: CreateAppointmentDto,@GetUser() user:client.User) {
-    
     return this.appointmentService.create(createAppointmentDto,user.id);
   }
 
@@ -38,7 +39,16 @@ export class AppointmentController {
   @Roles('DOCTOR')
   @HttpCode(200)
   @UseGuards(AuthGuard,RolesGuard)
-  getDoctor(@GetUser() user: client.Doctor) {
+  getForDoctor(@GetUser() user: client.Doctor) {
     return this.appointmentService.getAppointmentForDoctor(user.id);
   }
+  @Patch(':id/status')
+  @HttpCode(200)
+  @UseGuards(AuthGuard,RolesGuard)
+  @Roles('DOCTOR')
+  updateForStatus(@Param('id') id: string, @Body() updateStatusAppointmentDto: UpdateStatusAppointmentDto) {
+    return this.appointmentService.updateForStatus(id,updateStatusAppointmentDto);
+  }
+
+
 }
