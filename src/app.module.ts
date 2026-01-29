@@ -24,7 +24,6 @@ import { SpecialtyModule } from './modules/specialty/specialty.module';
     AppointmentModule,
     SpecialtyModule
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  
 })
 export class AppModule { }
