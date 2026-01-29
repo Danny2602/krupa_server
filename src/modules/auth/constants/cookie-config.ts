@@ -7,7 +7,8 @@ import { CookieOptions } from 'express';
 export const COOKIE_CONFIG: CookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'strict',
+    path: '/',// esto sirve para que los cookies sean accesibles desde cualquier ruta
     maxAge: 24 * 60 * 60 * 1000, // 24 horas
 };
 
